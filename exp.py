@@ -1,37 +1,34 @@
 from fastapi import Depends, HTTPException
-from sqlalchemy.orm import Session
-from database import SessionLocal, UserTable
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from database import AsyncSessionLocal, UserTable
 
 
-# 每次请求开一个数据库会话，用完自动关闭
-def get_db():
-    db = SessionLocal()
-    try:
+async def get_db():
+    async with AsyncSessionLocal() as db:
         yield db
-    finally:
-        db.close()
 
 
-# 增：新增用户
 @app.post("/users")
-def add_user(user: User, db: Session = Depends(get_db)):
+async def add_user(user: User, db: AsyncSession = Depends(get_db)):
     new_user = UserTable(name=user.name, age=user.age)
     db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
+    await db.commit()
+    await db.refresh(new_user)
     return {"message": "添加成功", "id": new_user.id}
 
 
-# 查：所有用户
 @app.get("/users")
-def get_users(db: Session = Depends(get_db)):
-    return db.query(UserTable).all()
+async def get_users(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(UserTable))
+    return result.scalars().all()
 
 
-# 查：一个用户
 @app.get("/users/{user_id}")
-def get_user(user_id: int, db: Session = Depends(get_db)):
-    user = db.query(UserTable).filter(UserTable.id == user_id).first()
+async def get_user(user_id: int, db: AsyncSession = Depends(get_db)):
+    stmt = select(UserTable).where(UserTable.id == user_id)
+    result = await db.execute(stmt)
+    user = result.scalar_one_or_none()
     if not user:
         raise HTTPException(status_code=404, detail="用户不存在")
     return user

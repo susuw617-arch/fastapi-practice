@@ -1,19 +1,18 @@
-from sqlalchemy import create_engine,Column,Integer,String
-from sqlalchemy.orm import declarative_base,sessionmaker
-DATABASE_URL = "sqlite:///./test.db"
+from sqlalchemy import Column, Integer, String
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+from sqlalchemy.orm import declarative_base
 
-engine = create_engine(DATABASE_URL,connect_args={"check_same_thread":False})
-SessionLocal = sessionmaker(bind=engine)
+# 异步连接地址，注意多了 +aiosqlite
+DATABASE_URL = "sqlite+aiosqlite:///./test.db"
+
+engine = create_async_engine(DATABASE_URL)
+AsyncSessionLocal = async_sessionmaker(engine, expire_on_commit=False)
 Base = declarative_base()
 
-#定义一张表
+
 class UserTable(Base):
     __tablename__ = "users"
 
-    id = Column(Integer,primary_key=True,index=True)
+    id = Column(Integer, primary_key=True, index=True)
     name = Column(String(50))
     age = Column(Integer)
-
-
-#自动建表
-Base.metadata.create_all(bind=engine)
