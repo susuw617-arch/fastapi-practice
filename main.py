@@ -2,8 +2,8 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 
 class User(BaseModel):
-    name:str
-    age:int
+    name: str
+    age: int
 
 app = FastAPI()
 
@@ -12,15 +12,15 @@ async def hello_world():
     return {"message": "Hello World"}
 
 @app.get("/hello/{name}")
-async def hello_world(name: str):
+async def hello_user(name: str):
     return {"message": f"Hello {name}"}
 
 @app.get("/add")
-async def add(a: int, b: int) -> int:
-    return a + b
+async def add(a: int, b: int):
+    return {"result": a + b}
 
 @app.post("/user")
 async def create_user(user:User):
-    return {f"message:创建成功{user.name}"}
+    return {"message":f"创建成功{user.name}"}
 
 
