@@ -1,13 +1,11 @@
-from fastapi import Depends,HTTPException
-from fastapi.routing import APIRoute
+from fastapi import FastAPI,Depends,HTTPException
 from pydantic import BaseModel
-from sqlalchemy.orm import Session
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from database import AsyncSessionLocal, UserTable
 
 
-app = APIRoute()
+app = FastAPI()
 
 class User(BaseModel):
     name : str
