@@ -1,6 +1,4 @@
-from unittest import result
-
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException,Query
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -62,7 +60,10 @@ async def delete_user(user_id: int,db: AsyncSession = Depends(get_db)):
 
 
 @router.get("",response_model=list[UserOut])
-async def list_user(page:int = 1,size: int = 10,db: AsyncSession = Depends(get_db)):
+async def list_user(
+        page:int = Query(1,ge=1),
+        size: int = Query(10,ge=1,le=100),
+        db: AsyncSession = Depends(get_db)):
     offset = (page - 1) * size
     stmt = select(UserTable).offset(offset).limit(size)
     result = await db.execute(stmt)
