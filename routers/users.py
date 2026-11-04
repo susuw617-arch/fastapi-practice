@@ -1,11 +1,12 @@
+from unittest import result
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database import get_db
 from models import UserTable
-from schemas import User
-
+from schemas import User, UserOut
 
 router = APIRouter(prefix="/users", tags=["用户"])
 
@@ -22,7 +23,7 @@ async def add_user(user:User,db:AsyncSession = Depends(get_db)):
 
 
 #查：一个用户
-@router.get("/{user_id}")
+@router.get("/{user_id}",response_model=UserOut)
 async def get_user(user_id:int,db:AsyncSession = Depends(get_db)):
     stmt = select(UserTable).where(UserTable.id == user_id)
     result = await db.execute(stmt)
@@ -47,7 +48,7 @@ async def change_user(user_id:int,user:User,db:AsyncSession = Depends(get_db)):
 
 #删
 @router.delete("/{user_id}")
-async def detete_user(user_id: int,db: AsyncSession = Depends(get_db)):
+async def delete_user(user_id: int,db: AsyncSession = Depends(get_db)):
     stmt = select(UserTable).where(UserTable.id == user_id)
     result = await db.execute(stmt)
     user = result.scalar_one_or_none()
@@ -58,3 +59,12 @@ async def detete_user(user_id: int,db: AsyncSession = Depends(get_db)):
     await db.delete(user)
     await db.commit()
     return {"message": "删除成功!"}
+
+
+@router.get("",response_model=list[UserOut])
+async def list_user(page:int = 1,size: int = 10,db: AsyncSession = Depends(get_db)):
+    offset = (page - 1) * size
+    stmt = select(UserTable).offset(offset).limit(size)
+    result = await db.execute(stmt)
+    return result.scalars().all()
+
