@@ -1,10 +1,14 @@
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from sqlalchemy.orm import declarative_base
 
-# 异步连接地址，注意多了 +aiosqlite
-DATABASE_URL = "sqlite+aiosqlite:///./test.db"
+import os
 
-engine = create_async_engine(DATABASE_URL)
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "sqlite+aiosqlite:///./test.db"   # 没配环境变量时还用 SQLite
+)
+engine = create_async_engine(DATABASE_URL, echo=True)
+
 AsyncSessionLocal = async_sessionmaker(engine, expire_on_commit=False)
 Base = declarative_base()
 
