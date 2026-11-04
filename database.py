@@ -10,9 +10,6 @@ AsyncSessionLocal = async_sessionmaker(engine, expire_on_commit=False)
 Base = declarative_base()
 
 
-class UserTable(Base):
-    __tablename__ = "users"
-
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(50))
-    age = Column(Integer)
+async def get_db():
+    async with AsyncSessionLocal() as db:
+        yield db
